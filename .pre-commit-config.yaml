@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.5.2
+    hooks:
+      - id: commitizen
+      - id: commitizen-branch
+        stages:
+          - push
+  - repo: local
+    hooks:
+      - id: commit
+        name: commit formatting check
+        description: runs cz check to ensure all commits fit expected commitizen format
+        language: system
+        entry: bash -c "cz check --rev-range main"
+        always_run: true
+        fail_fast: true
+      - id: formatting
+        name: formatting check
+        description: runs cargo formatter to check that files are meeting its recommendations
+        language: rust
+        entry: cargo
+        args:
+          - fmt
+          - --check
+        always_run: true
+        fail_fast: true
+default_install_hook_types:
+  - pre-push

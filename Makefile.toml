@@ -1,0 +1,18 @@
+[tasks.base-install]
+description = "Installs build tools"
+script = [
+    "pip install --user -U Commitizen",
+    "pip install pre-commit",
+]
+
+[tasks.install]
+description = "Installs build tools"
+script = [
+    "pre-commit install",
+]
+dependencies = ["base-install"]
+
+[tasks.commit]
+description = "Creates a commit via Commitizen"
+command = "cz"
+args = ["c"]
