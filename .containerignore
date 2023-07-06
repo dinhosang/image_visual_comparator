@@ -1,0 +1,8 @@
+/.github
+/target
+/images
+
+.gitignore
+.pre-commit-config.yaml
+Containerfile
+README.md
