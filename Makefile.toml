@@ -1,12 +1,12 @@
 [tasks.base-install]
-description = "Installs build tools"
+description = "Downloads and installs baseline build tools"
 script = [
     "pip install --user -U Commitizen",
     "pip install pre-commit",
 ]
 
 [tasks.install]
-description = "Installs build tools"
+description = "Installs all build tools"
 script = [
     "pre-commit install",
 ]

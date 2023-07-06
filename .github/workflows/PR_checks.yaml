@@ -1,0 +1,20 @@
+name: Run Build Checks on PR
+
+on: pull_request
+
+jobs:
+  pr_checks:
+    runs-on: ubuntu-latest
+    name: perform checks on PR code"
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+      - name: formatting check
+        run: cargo fmt --check
+        shell: bash
+      - name: linting check
+        run: cargo clippy -- -D warnings
+        shell: bash
+      - name: tests
+        run: cargo test
+        shell: bash
