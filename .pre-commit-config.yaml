@@ -21,6 +21,7 @@ repos:
           - --check
         always_run: true
         fail_fast: true
+        pass_filenames: false
       - id: linting
         name: linting check
         description: runs cargo clippy to check that files are meeting its recommendations
@@ -34,6 +35,7 @@ repos:
           - warnings
         always_run: true
         fail_fast: true
+        pass_filenames: false
       - id: testing
         name: running tests
         description: runs unit tests using builtin rust test runner

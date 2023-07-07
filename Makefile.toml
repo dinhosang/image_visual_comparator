@@ -16,3 +16,7 @@ dependencies = ["base-install"]
 description = "Creates a commit via Commitizen"
 command = "cz"
 args = ["c"]
+
+[tasks.format]
+
+[tasks.clippy]
