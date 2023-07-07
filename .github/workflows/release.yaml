@@ -16,10 +16,17 @@ jobs:
         with:
           fetch-depth: 0
           token: "${{ secrets.REPO_PUSH_TOKEN }}"
-      - id: cz
+      - id: version_bump
         name: Create bump and changelog
         uses: commitizen-tools/commitizen-action@master
         with:
           github_token: "${{ secrets.REPO_PUSH_TOKEN }}"
+      - id: lock_bump
+        name: Bump the Cargo.lock
+        run: |
+          cargo check
+          git add Cargo.lock
+          git commit --amend --no-edit
+          git push -f
       - name: Print Version
         run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
