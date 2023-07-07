@@ -45,5 +45,6 @@ repos:
         entry: cargo test
         always_run: true
         fail_fast: true
+        pass_filenames: false
 default_install_hook_types:
   - pre-push

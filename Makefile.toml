@@ -20,3 +20,8 @@ args = ["c"]
 [tasks.format]
 
 [tasks.clippy]
+
+[tasks.clippy-fix]
+description = "Runs clippy with fix flag"
+command = "cargo"
+args = ["clippy", "--fix", "--allow-dirty", "--allow-staged"]
