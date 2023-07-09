@@ -1,15 +1,10 @@
 use std::process;
 
-use image_visual_comparator::{run, Config};
+use image_visual_comparator::run;
 
 fn main() {
-    let tolerance = 5_f32;
-    let image_path_one = "./images/image_one.png";
-    let image_path_two = "./images/image_two.png";
-
-    let config = Config::build(tolerance, image_path_one, image_path_two);
-
-    match run(config) {
+    // TODO: some kind of input or config reading to determine locations to looks for images
+    match run() {
         Ok(mismatched_pixels) => println!("Mismatched Pixels: {:#?}", mismatched_pixels),
         Err(message) => {
             println!("{message}");
