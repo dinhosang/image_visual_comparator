@@ -1,3 +1,9 @@
+## 0.4.2 (2023-07-14)
+
+### Refactor
+
+- adding in unit tests, refactoring the location of some of the logic, and updating the README
+
 ## 0.4.1 (2023-07-09)
 
 ### Refactor
