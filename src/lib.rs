@@ -1,10 +1,13 @@
 use compare::compare_pair_of_images;
+use models::PixelCoord;
 
 mod compare;
 mod models;
 mod utils;
 
-pub fn run() -> Result<Vec<(u32, u32)>, String> {
+mod test_utils;
+
+pub fn run() -> Result<Vec<PixelCoord>, String> {
     // TODO: temp hard-coding
     let pixel_tolerance = 5_f32;
     let image_location_one = "./images/image_one.png";
