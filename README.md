@@ -1,4 +1,4 @@
-Some things I'd like to try in this repo:
+# Some things I'd like to try in this repo
 
 - rust
 - image comparison
@@ -13,11 +13,11 @@ If wishing to PR:
 
 TODO NEXT:
 
-- add in unit testing
-- documentation
-  - what types are possible ?
-    - gen doc, docs with examples, docs with tests ?
-  - most would be private so not generated in cargo doc
+- start stress-testing / benchmaring
+  - create many images (100s of pairs?)
+  - figure out how to benchmark a test that compares all the pairs
+  - then create alternative functions that do async/multi-threading
+  - then try benchmarks for those alternatives and see what it's like
 
 TODO:
 
