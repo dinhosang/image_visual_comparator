@@ -8,7 +8,17 @@ use crate::{
     },
 };
 
-// TODO: could do with a doc comment ?
+#[doc(hidden)]
+/// Compares two images and returns a vector of pixel co-ordinates of pixels who differ past the desired tolerance.
+///
+/// The location strings passed in should be relative to the directory the program is being run in.
+///
+/// The passed in tolerance will be used as a reference of whether two pixels with the same co-ordinates
+/// differ between two images. The comparison is performed by converting the pixels to lab colours and checking
+/// their squared distance, it is that distance which is checked against the tolerance.
+///
+/// For instance if an exact match is desired then a value of 0_f32 should be passed in. To allow for more relaxed
+/// standards simply use a higher number.
 pub fn compare_pair_of_images(
     image_location_one: &str,
     image_location_two: &str,
