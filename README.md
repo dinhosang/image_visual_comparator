@@ -13,7 +13,10 @@ If wishing to PR:
 
 TODO NEXT:
 
+- move io out of compare function, single responsibility, easier to modify as will want to be able to swap out io handling methods
 - start stress-testing / benchmaring
+  - now use io_uring
+    - also do async version for the comparison part
   - create many images (100s of pairs?)
   - figure out how to benchmark a test that compares all the pairs
   - then create alternative functions that do async/multi-threading

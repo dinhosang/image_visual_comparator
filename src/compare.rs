@@ -1,11 +1,9 @@
 use image::GenericImageView;
 
 use crate::{
-    models::PixelCoord,
-    utils::{
-        files::get_pair_of_images_from_file_locations,
-        validation::{are_dimensions_matching_for_images, is_pixel_for_images_matching},
-    },
+    errors::DimensionMismatchError,
+    models::{ImageHolder, PixelCoord},
+    utils::validation::{are_dimensions_matching_for_images, is_pixel_for_images_matching},
 };
 
 #[doc(hidden)]
@@ -20,24 +18,24 @@ use crate::{
 /// For instance if an exact match is desired then a value of 0_f32 should be passed in. To allow for more relaxed
 /// standards simply use a higher number.
 pub fn compare_pair_of_images(
-    image_location_one: &str,
-    image_location_two: &str,
+    images: &(ImageHolder, ImageHolder),
     pixel_tolerance: f32,
-) -> Result<Vec<PixelCoord>, String> {
-    let images = get_pair_of_images_from_file_locations(image_location_one, image_location_two)?;
-
-    if !are_dimensions_matching_for_images(&images) {
-        return Err(format!("ERROR: when comparing '{image_location_one}' and '{image_location_two}'. Message: 'image dimensions do not match'"));
+) -> Result<Vec<PixelCoord>, DimensionMismatchError> {
+    if !are_dimensions_matching_for_images(images) {
+        return Err(DimensionMismatchError::new(
+            images.0.location.to_string(),
+            images.1.location.to_string(),
+        ));
     }
 
-    let (width, height) = images.0.dimensions();
+    let (width, height) = images.0.image.dimensions();
 
     let mut mismatched_pixels: Vec<PixelCoord> = Vec::new();
 
     for y in 0..height {
         for x in 0..width {
             let pixel_coord = PixelCoord::new(x, y);
-            let is_matching = is_pixel_for_images_matching(&images, &pixel_coord, pixel_tolerance);
+            let is_matching = is_pixel_for_images_matching(images, &pixel_coord, pixel_tolerance);
             if !is_matching {
                 mismatched_pixels.push(pixel_coord);
             }
@@ -49,28 +47,31 @@ pub fn compare_pair_of_images(
 
 #[cfg(test)]
 mod tests {
+    pub mod helpers {
+        use image::DynamicImage;
+
+        use crate::models::ImageHolder;
+
+        pub fn create_image_holders(
+            image_one: DynamicImage,
+            image_one_location: &String,
+            image_two: DynamicImage,
+            image_two_location: &String,
+        ) -> (ImageHolder, ImageHolder) {
+            (
+                ImageHolder::new(image_one, image_one_location),
+                ImageHolder::new(image_two, image_two_location),
+            )
+        }
+    }
     mod returns_error {
         use crate::{
-            compare::compare_pair_of_images,
+            compare::{compare_pair_of_images, tests::helpers::create_image_holders},
             test_utils::{
                 files::{create_temp_dir_handler, get_image_locations},
                 image::create_dynamic_image,
             },
         };
-
-        #[test]
-        fn when_an_image_is_missing_in_file_system() {
-            let temp_dir_holder = create_temp_dir_handler();
-            let (image_one_location, image_two_location) = get_image_locations(&temp_dir_holder);
-
-            let image_one = create_dynamic_image(5, 5);
-            let _ = image_one.save(&image_one_location);
-
-            let result = compare_pair_of_images(&image_one_location, &image_two_location, 5_f32);
-            let expected = Err(format!("ERROR: when trying to open '{}'. Message: 'No such file or directory (os error 2)'", image_two_location));
-
-            assert_eq!(expected, result);
-        }
 
         #[test]
         fn when_images_do_not_have_matching_dimensions() {
@@ -83,13 +84,20 @@ mod tests {
             let _ = image_one.save(&image_one_location);
             let _ = image_two.save(&image_two_location);
 
-            let result = compare_pair_of_images(&image_one_location, &image_two_location, 5_f32);
-            let expected = Err(format!(
-                "ERROR: when comparing '{}' and '{}'. Message: 'image dimensions do not match'",
-                image_one_location, image_two_location
-            ));
+            let images = create_image_holders(
+                image_one,
+                &image_one_location,
+                image_two,
+                &image_two_location,
+            );
 
-            assert_eq!(expected, result);
+            let result = compare_pair_of_images(&images, 5_f32);
+            let expected = format!(
+                "dimensions do not match: {} and {}",
+                image_one_location, image_two_location
+            );
+
+            assert_eq!(expected, result.unwrap_err().to_string());
         }
     }
 
@@ -97,22 +105,21 @@ mod tests {
         use image::{DynamicImage, GenericImage};
 
         use crate::{
-            models::PixelCoord,
+            models::{ImageHolder, PixelCoord},
             test_utils::{
                 files::{create_temp_dir_handler, get_image_locations, TempDirHolder},
                 image::create_dynamic_image,
             },
         };
 
+        use super::helpers::create_image_holders;
+
         const PIXEL_COLOUR_WITHIN_TOLERANCE: u8 = 250;
         const PIXEL_COLOUR_OUTSIDE_TOLERANCE: u8 = 249;
 
         fn setup_and_return_required_data() -> (
             TempDirHolder,
-            String,
-            String,
-            DynamicImage,
-            DynamicImage,
+            (ImageHolder, ImageHolder),
             PixelCoord,
             PixelCoord,
             PixelCoord,
@@ -127,12 +134,16 @@ mod tests {
             let pixel_coord_two = PixelCoord::new(1_u32, 2_u32);
             let pixel_coord_three = PixelCoord::new(3_u32, 4_u32);
 
+            let images = create_image_holders(
+                image_one,
+                &image_one_location,
+                image_two,
+                &image_two_location,
+            );
+
             (
                 temp_dir_holder,
-                image_one_location,
-                image_two_location,
-                image_one,
-                image_two,
+                images,
                 pixel_coord_one,
                 pixel_coord_two,
                 pixel_coord_three,
@@ -155,11 +166,15 @@ mod tests {
             use crate::{
                 compare::{
                     compare_pair_of_images,
-                    tests::returns_vector::{
-                        setup_and_return_required_data, update_image_for_pixels,
-                        PIXEL_COLOUR_WITHIN_TOLERANCE,
+                    tests::{
+                        helpers::create_image_holders,
+                        returns_vector::{
+                            setup_and_return_required_data, update_image_for_pixels,
+                            PIXEL_COLOUR_WITHIN_TOLERANCE,
+                        },
                     },
                 },
+                models::PixelCoord,
                 test_utils::{
                     files::{create_temp_dir_handler, get_image_locations},
                     image::create_dynamic_image,
@@ -178,25 +193,28 @@ mod tests {
                 let _ = image_one.save(&image_one_location);
                 let _ = image_two.save(&image_two_location);
 
-                let result =
-                    compare_pair_of_images(&image_one_location, &image_two_location, 5_f32);
-                let expected = Ok(vec![]);
+                let images = create_image_holders(
+                    image_one,
+                    &image_one_location,
+                    image_two,
+                    &image_two_location,
+                );
+
+                let result = compare_pair_of_images(&images, 5_f32);
+                let expected: Vec<PixelCoord> = vec![];
 
                 assert_eq!(
-                    image_one, image_two,
+                    images.0.image, images.1.image,
                     "Images should have matched, but do not"
                 );
-                assert_eq!(expected, result);
+                assert_eq!(expected, result.unwrap());
             }
 
             #[test]
             fn when_image_have_pixel_differences_within_the_chosen_tolerance_for_each_pixel() {
                 let (
                     _temp_dir_holder,
-                    image_one_location,
-                    image_two_location,
-                    mut image_one,
-                    image_two,
+                    mut images,
                     pixel_coord_one,
                     pixel_coord_two,
                     pixel_coord_three,
@@ -206,35 +224,44 @@ mod tests {
                     (
                         pixel_coord_one.x,
                         pixel_coord_one.y,
-                        image_one.get_pixel(pixel_coord_one.x, pixel_coord_one.y),
+                        images
+                            .0
+                            .image
+                            .get_pixel(pixel_coord_one.x, pixel_coord_one.y),
                         PIXEL_COLOUR_WITHIN_TOLERANCE,
                     ),
                     (
                         pixel_coord_two.x,
                         pixel_coord_two.y,
-                        image_one.get_pixel(pixel_coord_two.x, pixel_coord_two.y),
+                        images
+                            .0
+                            .image
+                            .get_pixel(pixel_coord_two.x, pixel_coord_two.y),
                         PIXEL_COLOUR_WITHIN_TOLERANCE,
                     ),
                     (
                         pixel_coord_three.x,
                         pixel_coord_three.y,
-                        image_one.get_pixel(pixel_coord_three.x, pixel_coord_three.y),
+                        images
+                            .0
+                            .image
+                            .get_pixel(pixel_coord_three.x, pixel_coord_three.y),
                         PIXEL_COLOUR_WITHIN_TOLERANCE,
                     ),
                 ];
-                update_image_for_pixels(&mut image_one, image_one_pixels);
-                let _ = image_one.save(&image_one_location);
-                let _ = image_two.save(&image_two_location);
 
-                let result =
-                    compare_pair_of_images(&image_one_location, &image_two_location, 5_f32);
-                let expected = Ok(vec![]);
+                update_image_for_pixels(&mut images.0.image, image_one_pixels);
+                let _ = images.0.image.save(&images.0.location);
+                let _ = images.1.image.save(&images.1.location);
+
+                let result = compare_pair_of_images(&images, 5_f32);
+                let expected: Vec<PixelCoord> = vec![];
 
                 assert_ne!(
-                    image_one, image_two,
+                    images.0.image, images.1.image,
                     "Images should NOT have matched, but do"
                 );
-                assert_eq!(expected, result);
+                assert_eq!(expected, result.unwrap());
             }
         }
 
@@ -253,10 +280,7 @@ mod tests {
             fn when_images_have_pixel_differences_that_breach_the_chosen_tolerance() {
                 let (
                     _temp_dir_holder,
-                    image_one_location,
-                    image_two_location,
-                    mut image_one,
-                    image_two,
+                    mut images,
                     pixel_coord_one,
                     pixel_coord_two,
                     pixel_coord_three,
@@ -266,41 +290,49 @@ mod tests {
                     (
                         pixel_coord_one.x,
                         pixel_coord_one.y,
-                        image_one.get_pixel(pixel_coord_one.x, pixel_coord_one.y),
+                        images
+                            .0
+                            .image
+                            .get_pixel(pixel_coord_one.x, pixel_coord_one.y),
                         PIXEL_COLOUR_OUTSIDE_TOLERANCE,
                     ),
                     (
                         2,
                         1,
-                        image_one.get_pixel(2_u32, 1_u32),
+                        images.0.image.get_pixel(2_u32, 1_u32),
                         PIXEL_COLOUR_WITHIN_TOLERANCE,
                     ),
                     (
                         pixel_coord_two.x,
                         pixel_coord_two.y,
-                        image_one.get_pixel(pixel_coord_two.x, pixel_coord_two.y),
+                        images
+                            .0
+                            .image
+                            .get_pixel(pixel_coord_two.x, pixel_coord_two.y),
                         PIXEL_COLOUR_OUTSIDE_TOLERANCE,
                     ),
                     (
                         pixel_coord_three.x,
                         pixel_coord_three.y,
-                        image_one.get_pixel(pixel_coord_three.x, pixel_coord_three.y),
+                        images
+                            .0
+                            .image
+                            .get_pixel(pixel_coord_three.x, pixel_coord_three.y),
                         PIXEL_COLOUR_OUTSIDE_TOLERANCE,
                     ),
                 ];
-                update_image_for_pixels(&mut image_one, image_one_pixels);
-                let _ = image_one.save(&image_one_location);
-                let _ = image_two.save(&image_two_location);
+                update_image_for_pixels(&mut images.0.image, image_one_pixels);
+                let _ = images.0.image.save(&images.0.location);
+                let _ = images.1.image.save(&images.1.location);
 
-                let result =
-                    compare_pair_of_images(&image_one_location, &image_two_location, 5_f32);
-                let expected = Ok(vec![pixel_coord_one, pixel_coord_two, pixel_coord_three]);
+                let result = compare_pair_of_images(&images, 5_f32);
+                let expected = vec![pixel_coord_one, pixel_coord_two, pixel_coord_three];
 
                 assert_ne!(
-                    image_one, image_two,
+                    images.0.image, images.1.image,
                     "Images should NOT have matched, but do"
                 );
-                assert_eq!(expected, result);
+                assert_eq!(expected, result.unwrap());
             }
         }
     }

@@ -1,23 +1,24 @@
-use image::DynamicImage;
 use lab::Lab;
 
-use crate::models::PixelCoord;
+use crate::models::{ImageHolder, PixelCoord};
 
 use super::colour::get_lab_colour_for_img_pixel;
 
 pub fn are_dimensions_matching_for_images(
-    (image_one, image_two): &(DynamicImage, DynamicImage),
+    (image_one_holder, image_two_holder): &(ImageHolder, ImageHolder),
 ) -> bool {
+    let image_one = &image_one_holder.image;
+    let image_two = &image_two_holder.image;
     image_one.height() == image_two.height() && image_one.width() == image_two.width()
 }
 
 pub fn is_pixel_for_images_matching(
-    images: &(DynamicImage, DynamicImage),
+    (image_one_holder, image_two_holder): &(ImageHolder, ImageHolder),
     pixel_coord: &PixelCoord,
     tolerance: f32,
 ) -> bool {
-    let lab_colour: Lab = get_lab_colour_for_img_pixel(&images.0, pixel_coord);
-    let lab_colour_two: Lab = get_lab_colour_for_img_pixel(&images.1, pixel_coord);
+    let lab_colour: Lab = get_lab_colour_for_img_pixel(&image_one_holder.image, pixel_coord);
+    let lab_colour_two: Lab = get_lab_colour_for_img_pixel(&image_two_holder.image, pixel_coord);
     let difference: f32 = lab_colour.squared_distance(&lab_colour_two);
 
     difference <= tolerance
@@ -25,11 +26,30 @@ pub fn is_pixel_for_images_matching(
 
 #[cfg(test)]
 mod tests {
+
+    pub mod helpers {
+        use image::DynamicImage;
+
+        use crate::models::ImageHolder;
+
+        pub fn create_image_holders(
+            image_one: DynamicImage,
+            image_two: DynamicImage,
+        ) -> (ImageHolder, ImageHolder) {
+            (
+                ImageHolder::new(image_one, "one.png"),
+                ImageHolder::new(image_two, "two.png"),
+            )
+        }
+    }
+
     mod are_dimensions_matching_for_images {
         mod returns_false {
             use crate::{
                 test_utils::image::create_dynamic_image,
-                utils::validation::are_dimensions_matching_for_images,
+                utils::validation::{
+                    are_dimensions_matching_for_images, tests::helpers::create_image_holders,
+                },
             };
 
             const EXPECTED_RESULT: bool = false;
@@ -39,10 +59,9 @@ mod tests {
                 let image_one = create_dynamic_image(4, 4);
                 let image_two = create_dynamic_image(4, 5);
 
-                assert_eq!(
-                    EXPECTED_RESULT,
-                    are_dimensions_matching_for_images(&(image_one, image_two))
-                )
+                let input = create_image_holders(image_one, image_two);
+
+                assert_eq!(EXPECTED_RESULT, are_dimensions_matching_for_images(&input))
             }
 
             #[test]
@@ -50,17 +69,18 @@ mod tests {
                 let image_one = create_dynamic_image(4, 4);
                 let image_two = create_dynamic_image(3, 4);
 
-                assert_eq!(
-                    EXPECTED_RESULT,
-                    are_dimensions_matching_for_images(&(image_one, image_two))
-                )
+                let input = create_image_holders(image_one, image_two);
+
+                assert_eq!(EXPECTED_RESULT, are_dimensions_matching_for_images(&input))
             }
         }
 
         mod returns_true {
             use crate::{
                 test_utils::image::{change_pixel_on_img, create_dynamic_image},
-                utils::validation::are_dimensions_matching_for_images,
+                utils::validation::{
+                    are_dimensions_matching_for_images, tests::helpers::create_image_holders,
+                },
             };
 
             const EXPECTED_RESULT: bool = true;
@@ -72,10 +92,9 @@ mod tests {
 
                 change_pixel_on_img(&mut image_two, 2, 1);
 
-                assert_eq!(
-                    EXPECTED_RESULT,
-                    are_dimensions_matching_for_images(&(image_one, image_two))
-                )
+                let input = create_image_holders(image_one, image_two);
+
+                assert_eq!(EXPECTED_RESULT, are_dimensions_matching_for_images(&input))
             }
 
             #[test]
@@ -83,10 +102,9 @@ mod tests {
                 let image_one = create_dynamic_image(4, 4);
                 let image_two = create_dynamic_image(4, 4);
 
-                assert_eq!(
-                    EXPECTED_RESULT,
-                    are_dimensions_matching_for_images(&(image_one, image_two))
-                )
+                let input = create_image_holders(image_one, image_two);
+
+                assert_eq!(EXPECTED_RESULT, are_dimensions_matching_for_images(&input))
             }
         }
     }
@@ -97,8 +115,11 @@ mod tests {
             use lab::Lab;
 
             use crate::{
-                models::PixelCoord, test_utils::image::create_dynamic_image,
-                utils::validation::is_pixel_for_images_matching,
+                models::PixelCoord,
+                test_utils::image::create_dynamic_image,
+                utils::validation::{
+                    is_pixel_for_images_matching, tests::helpers::create_image_holders,
+                },
             };
 
             const EXPECTED_RESULT: bool = false;
@@ -123,10 +144,12 @@ mod tests {
                 let lab_colour_two: Lab = Lab::from_rgba(&image_two_pixel.0);
                 let difference: f32 = lab_colour.squared_distance(&lab_colour_two);
 
+                let images = create_image_holders(image_one, image_two);
+
                 assert!(difference > TOLERANCE);
                 assert_eq!(
                     EXPECTED_RESULT,
-                    is_pixel_for_images_matching(&(image_one, image_two), &pixel_coord, TOLERANCE)
+                    is_pixel_for_images_matching(&images, &pixel_coord, TOLERANCE)
                 );
             }
         }
@@ -136,8 +159,11 @@ mod tests {
             use lab::Lab;
 
             use crate::{
-                models::PixelCoord, test_utils::image::create_dynamic_image,
-                utils::validation::is_pixel_for_images_matching,
+                models::PixelCoord,
+                test_utils::image::create_dynamic_image,
+                utils::validation::{
+                    is_pixel_for_images_matching, tests::helpers::create_image_holders,
+                },
             };
 
             const EXPECTED_RESULT: bool = true;
@@ -157,10 +183,12 @@ mod tests {
                 let lab_colour_two: Lab = Lab::from_rgba(&image_two_pixel.0);
                 let difference: f32 = lab_colour.squared_distance(&lab_colour_two);
 
+                let images = create_image_holders(image_one, image_two);
+
                 assert_eq!(0_f32, difference);
                 assert_eq!(
                     EXPECTED_RESULT,
-                    is_pixel_for_images_matching(&(image_one, image_two), &pixel_coord, 5_f32)
+                    is_pixel_for_images_matching(&images, &pixel_coord, 5_f32)
                 )
             }
 
@@ -182,10 +210,12 @@ mod tests {
                 let lab_colour_two: Lab = Lab::from_rgba(&image_two_pixel.0);
                 let difference: f32 = lab_colour.squared_distance(&lab_colour_two);
 
+                let images = create_image_holders(image_one, image_two);
+
                 assert!(difference < TOLERANCE);
                 assert_eq!(
                     EXPECTED_RESULT,
-                    is_pixel_for_images_matching(&(image_one, image_two), &pixel_coord, TOLERANCE)
+                    is_pixel_for_images_matching(&images, &pixel_coord, TOLERANCE)
                 );
             }
         }
