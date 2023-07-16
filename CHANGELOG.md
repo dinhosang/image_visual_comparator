@@ -1,3 +1,9 @@
+## 0.4.3 (2023-07-16)
+
+### Refactor
+
+- adding in bespoke errors, remove io from compare
+
 ## 0.4.2 (2023-07-14)
 
 ### Refactor
