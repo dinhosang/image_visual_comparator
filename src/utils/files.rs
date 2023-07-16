@@ -1,26 +1,23 @@
-use image::DynamicImage;
-
 use std::path::Path;
 
-fn get_image_from_file_location(image_location: &str) -> Result<DynamicImage, String> {
-    let path = Path::new(image_location);
+use crate::{errors::IOError, models::ImageHolder};
+
+fn get_image_from_file_location(location: &str) -> Result<ImageHolder, IOError> {
+    let path = Path::new(location);
 
     match image::open(path) {
-        Ok(img) => Ok(img),
-        Err(error) => {
-            let original_message = error.to_string();
-            let message = format!(
-                "ERROR: when trying to open '{image_location}'. Message: '{original_message}'"
-            );
-            Err(message)
-        }
+        Ok(image) => Ok(ImageHolder::new(image, location)),
+        Err(error) => Err(IOError::Read {
+            location: location.to_string(),
+            source: error,
+        }),
     }
 }
 
 pub fn get_pair_of_images_from_file_locations(
     image_location_one: &str,
     image_location_two: &str,
-) -> Result<(DynamicImage, DynamicImage), String> {
+) -> Result<(ImageHolder, ImageHolder), IOError> {
     let image_one = get_image_from_file_location(image_location_one)?;
     let image_two = get_image_from_file_location(image_location_two)?;
 
@@ -30,6 +27,7 @@ pub fn get_pair_of_images_from_file_locations(
 #[cfg(test)]
 mod tests {
     mod returns_error {
+
         use crate::{
             test_utils::{
                 files::{create_temp_dir_handler, get_image_locations},
@@ -48,11 +46,12 @@ mod tests {
                 image_two_location.as_str(),
             );
 
-            let expected_err_msg = format!(
-                "ERROR: when trying to open '{image_one_location}'. Message: 'No such file or directory (os error 2)'"
+            let expected_message = format!(
+                "when reading location: '{}'. Message: 'No such file or directory (os error 2)'",
+                image_one_location,
             );
 
-            assert_eq!(Err(expected_err_msg), result);
+            assert_eq!(expected_message, result.unwrap_err().to_string());
         }
 
         #[test]
@@ -68,10 +67,11 @@ mod tests {
             );
 
             let expected_err_msg = format!(
-                "ERROR: when trying to open '{image_one_location}'. Message: 'No such file or directory (os error 2)'"
+                "when reading location: '{}'. Message: 'No such file or directory (os error 2)'",
+                image_one_location,
             );
 
-            assert_eq!(Err(expected_err_msg), result);
+            assert_eq!(expected_err_msg, result.unwrap_err().to_string());
         }
 
         #[test]
@@ -87,15 +87,17 @@ mod tests {
             );
 
             let expected_err_msg = format!(
-                "ERROR: when trying to open '{image_two_location}'. Message: 'No such file or directory (os error 2)'"
+                "when reading location: '{}'. Message: 'No such file or directory (os error 2)'",
+                image_two_location,
             );
 
-            assert_eq!(Err(expected_err_msg), result);
+            assert_eq!(expected_err_msg, result.unwrap_err().to_string());
         }
     }
 
     mod returns_images {
         use crate::{
+            models::ImageHolder,
             test_utils::{
                 files::{create_temp_dir_handler, get_image_locations},
                 image::{change_pixel_on_img, create_dynamic_image},
@@ -104,7 +106,7 @@ mod tests {
         };
 
         #[test]
-        fn when_images_exist_and_match_dimensions_and_match_content() {
+        fn when_images_exist() {
             let temp_dir_holder = create_temp_dir_handler();
             let (image_one_location, image_two_location) = get_image_locations(&temp_dir_holder);
 
@@ -119,11 +121,16 @@ mod tests {
                 image_two_location.as_str(),
             );
 
-            assert_eq!(Ok((image_one, image_two)), result);
+            let expected = (
+                ImageHolder::new(image_one, &image_one_location),
+                ImageHolder::new(image_two, &image_two_location),
+            );
+
+            assert_eq!(expected, result.unwrap());
         }
 
         #[test]
-        fn when_images_exist_and_match_dimensions_but_do_not_match_content() {
+        fn when_images_exist_but_do_not_match_in_content() {
             let temp_dir_holder = create_temp_dir_handler();
             let (image_one_location, image_two_location) = get_image_locations(&temp_dir_holder);
 
@@ -139,7 +146,12 @@ mod tests {
                 image_two_location.as_str(),
             );
 
-            assert_eq!(Ok((image_one, image_two)), result);
+            let expected = (
+                ImageHolder::new(image_one, &image_one_location),
+                ImageHolder::new(image_two, &image_two_location),
+            );
+
+            assert_eq!(expected, result.unwrap());
         }
     }
 }
