@@ -13,47 +13,36 @@ If wishing to PR:
 
 TODO NEXT:
 
-- have defaults for file locations and tolerance, accept input from user
-  - take in dirs of image to sweep through
-    - one set for original, and one for recently taken
-  - allow passing in of tolerance (i.e. what % diff will allow)
-  - figure out how I want to get input from user and what shape it should take
-    - args and/or config file and/or env keys ?
-      - <https://crates.io/crates/config>
+- handle checking for directories, error if not found
+- should inform if there are solo images, error if any found
+  - above meaning images with no corresponding pair
+- retrieve paths of pairs of images and pass into handle pair function instead of current hard-coding
 
 TODO:
 
-- how much should this cli do ?
-  - take in dirs of image to sweep through
-    - one set for original, and one for recently taken
-  - grab pairs of images and do comparison
-    - images need same name but be in different folders
-    - how many to grab at once ? multithreading ? would need to benchmark to know
-  - take each resulting list of mismatched pixels
-  - create new image that is the pair of images side by side
-  - draw box around areas of mismatched pixels on both sides of this new image
-    - box should be close enough to the pixels to be clear what is wrong
-    - box should be able to enlargen and encompass multiple mismatched pixels if they are close enough to one another
-    - box should default red, but could be another colour ?
-      - set by user ?
-      - determined by colours on image ?
-  - save new image into a results folder
-  - report back to user what the result was ?
-  - should log progress
-    - can differ in style if logging to terminal or to file ?
-    - should allow or logs to be suppressed
-  - should write result to a file in top of results folder so that other apps can see progress and respond as appropriate ?
+- grab pairs of images and do comparison
+  - images need same name but be in different folders
+  - how many to grab at once ? multithreading ? would need to benchmark to know
+- take each resulting list of mismatched pixels
+- create new image that is the pair of images side by side
+- draw box around areas of mismatched pixels on both sides of this new image
+  - box should be close enough to the pixels to be clear what is wrong
+  - box should be able to enlargen and encompass multiple mismatched pixels if they are close enough to one another
+  - box should default red, but could be another colour ?
+    - set by user ?
+    - determined by colours on image ?
+- save new image into a results folder
+- report back to user what the result was ?
+- should log progress
+  - can differ in style if logging to terminal or to file ?
+  - should allow or logs to be suppressed
+- should write result to a file in top of results folder so that other apps can see progress and respond as appropriate ?
 - should not handle:
   - responding to there being mismatched images, caller of cli should see result file and decide what they want to do
   - terminal interaction by user
     - should just take starting input and run
-- figure out how I want to get input from user and what shape it should take
-  - args and/or config file and/or env keys ?
-    - <https://crates.io/crates/config>
-- allow passing in of tolerance (i.e. what % diff will allow)
 - figure out how benchmarking works
   - checking memory usage too ? and other metrics
-- create many images
 - stress test for benchmark
   - do all sync first on one thread
   - then benchmark with stress testing

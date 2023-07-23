@@ -1,19 +1,32 @@
-use compare::compare_pair_of_images;
-use errors::IVCError;
-use models::{ImageHolder, PixelCoord};
-use tokio::runtime::Runtime;
-use tokio::task::JoinSet;
-use utils::files::get_pair_of_images_from_file_locations;
-
 mod compare;
+pub mod config;
 mod errors;
 mod models;
 mod utils;
 
 mod test_utils;
 
-pub fn run() {
-    let pixel_tolerance = 5_f32;
+use compare::compare_pair_of_images;
+use config::AppConfig;
+use errors::IVCError;
+use models::{ImageHolder, PixelCoord};
+use tokio::runtime::Runtime;
+use tokio::task::JoinSet;
+use utils::files::get_pair_of_images_from_file_locations;
+
+pub fn run(config: AppConfig) {
+    let pixel_tolerance = config.get_tolerance();
+
+    /*
+        TODO:
+        - check if directory for current exists
+        - check if directory for original exists
+        - check that there are no solo images
+            - should error if there are
+        - should grab pairs of images from current/original dirs
+            - need new struct ?
+        - should then use to spawn the comparison process
+    */
 
     let rt = Runtime::new().unwrap();
     rt.block_on(async {

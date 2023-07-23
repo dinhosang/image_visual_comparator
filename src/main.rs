@@ -1,6 +1,7 @@
-use image_visual_comparator::run;
+use clap::Parser;
+
+use image_visual_comparator::{config::AppConfig, run};
 
 fn main() {
-    // TODO: some kind of input or config reading to determine locations to looks for images
-    run();
+    run(AppConfig::parse());
 }
