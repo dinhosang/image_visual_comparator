@@ -13,6 +13,14 @@ If wishing to PR:
 
 TODO NEXT:
 
+- have defaults for file locations and tolerance, accept input from user
+  - take in dirs of image to sweep through
+    - one set for original, and one for recently taken
+  - allow passing in of tolerance (i.e. what % diff will allow)
+  - figure out how I want to get input from user and what shape it should take
+    - args and/or config file and/or env keys ?
+      - <https://crates.io/crates/config>
+
 TODO:
 
 - how much should this cli do ?
