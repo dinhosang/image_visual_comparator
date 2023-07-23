@@ -1,3 +1,9 @@
+## 0.6.0 (2023-07-23)
+
+### Feat
+
+- **config**: creating a config entity
+
 ## 0.5.1 (2023-07-23)
 
 ### Refactor
