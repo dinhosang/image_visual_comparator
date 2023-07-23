@@ -1,3 +1,9 @@
+## 0.5.0 (2023-07-23)
+
+### Feat
+
+- add in basic benchmarking and decided on run format
+
 ## 0.4.3 (2023-07-16)
 
 ### Refactor
