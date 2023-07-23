@@ -15,6 +15,9 @@ jobs:
       - name: linting check
         run: cargo clippy -- -D warnings
         shell: bash
-      - name: tests
+      - name: tests (unit)
         run: cargo test
+        shell: bash
+      - name: tests (benchmark)
+        run: cargo bench
         shell: bash
