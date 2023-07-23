@@ -13,15 +13,6 @@ If wishing to PR:
 
 TODO NEXT:
 
-- move io out of compare function, single responsibility, easier to modify as will want to be able to swap out io handling methods
-- start stress-testing / benchmaring
-  - now use io_uring
-    - also do async version for the comparison part
-  - create many images (100s of pairs?)
-  - figure out how to benchmark a test that compares all the pairs
-  - then create alternative functions that do async/multi-threading
-  - then try benchmarks for those alternatives and see what it's like
-
 TODO:
 
 - how much should this cli do ?
@@ -77,4 +68,5 @@ TODO:
 - mutagen testing ?
 - static analysis ?
 - async logging ?
-- io_uring for io operations ?
+- some kind of loading bar , update, message so folks know how many have been done or % of progress?
+  - might not make sense depending on what the end result of this repo is

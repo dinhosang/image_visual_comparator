@@ -1,6 +1,8 @@
 use compare::compare_pair_of_images;
 use errors::IVCError;
 use models::{ImageHolder, PixelCoord};
+use tokio::runtime::Runtime;
+use tokio::task::JoinSet;
 use utils::files::get_pair_of_images_from_file_locations;
 
 mod compare;
@@ -10,13 +12,27 @@ mod utils;
 
 mod test_utils;
 
-pub fn run() -> Result<Vec<PixelCoord>, IVCError> {
-    // TODO: temp hard-coding
+pub fn run() {
     let pixel_tolerance = 5_f32;
-    let image_location_one = "./images/image_one.png";
-    let image_location_two = "./images/image_two.png";
 
-    handle_pair_of_images(image_location_one, image_location_two, pixel_tolerance)
+    let rt = Runtime::new().unwrap();
+    rt.block_on(async {
+        let mut set = JoinSet::new();
+
+        for index in 0..10 {
+            set.spawn(async move {
+                let _ = handle_pair_of_images(
+                    format!("./images/original/image_{index}.png").as_str(),
+                    format!("./images/current/image_{index}.png").as_str(),
+                    pixel_tolerance,
+                );
+            });
+        }
+
+        while let Some(task_result) = set.join_next().await {
+            task_result.unwrap();
+        }
+    });
 }
 
 fn handle_pair_of_images(
