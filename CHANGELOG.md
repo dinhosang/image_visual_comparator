@@ -1,3 +1,9 @@
+## 0.5.1 (2023-07-23)
+
+### Refactor
+
+- moving models into own files
+
 ## 0.5.0 (2023-07-23)
 
 ### Feat
