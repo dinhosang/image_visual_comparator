@@ -13,6 +13,7 @@ If wishing to PR:
 
 TODO NEXT:
 
+- when creating directories use Path/PathBuf rather than just trusting to user input as user could pass windows path, neeed to use std crate structs to handle that - can't just format together into one string directly
 - handle checking for directories, error if not found
 - should inform if there are solo images, error if any found
   - above meaning images with no corresponding pair
@@ -67,3 +68,28 @@ TODO:
 - async logging ?
 - some kind of loading bar , update, message so folks know how many have been done or % of progress?
   - might not make sense depending on what the end result of this repo is
+- for benchmarking, figure out how to store the criterion report created on each PR and have new runs compare against the last one.
+  - FIRST: is it correct to use Criterion in CI ? Docs for crate so no :/ so maybe just do locally, if so can ignore all below
+  - is it possible to store the report somehow in github but outside of the .git contents itself ?
+  - check for github actions
+  - can compare previous report and new for regression and fail if so
+  - if no regression then can upload new report as baseline for future PRs ?
+  - could create separate github workflow just for benchmarking
+    - need to remove from regular workflow then
+      - possible help:
+        - <https://github.com/marketplace/actions/criterion-compare-prs>
+        - <https://blog.petitviolet.net/post/2020-10-08/github-action-for-rust-project>
+        - actions/download-artifact@v2
+        - actions/upload-artifact@v2
+- benchmarking
+  - docs for Criterion mention it's not suitable for CI like GitHub Actions, and shuold use Iai instead :/
+    - <https://bheisler.github.io/criterion.rs/book/faq.html>
+    - <https://bheisler.github.io/criterion.rs/book/iai/comparison.html>
+  - extension to criterion (no idea if useful to me):
+    - <https://crates.io/crates/criterion-perf-events>
+    - <https://crates.io/crates/criterion-cycles-per-byte>
+  - maybe better to enforce running locally and check for regression locally rather than on CI ?
+- check through this when done to check good practices are followed:
+  - <https://rust-cli.github.io/book/index.html>
+- making cross platform
+  - does the fs module handle taking unix style paths and making them work in a windows os ? or does the cli have to do that itself/via a crate ?

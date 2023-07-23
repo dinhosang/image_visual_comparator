@@ -36,13 +36,23 @@ repos:
         always_run: true
         fail_fast: true
         pass_filenames: false
-      - id: testing
-        name: running tests
+      - id: testing_unit
+        name: running unit tests
         description: runs unit tests using builtin rust test runner
         language: system
         types: 
           - rust
         entry: cargo test
+        always_run: true
+        fail_fast: true
+        pass_filenames: false
+      - id: testing_bench
+        name: running benchmark tests
+        description: runs benchmark tests using Criterion (won't cause push to fail if regression found)
+        language: system
+        types: 
+          - rust
+        entry: cargo bench
         always_run: true
         fail_fast: true
         pass_filenames: false
