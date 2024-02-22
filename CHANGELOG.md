@@ -1,3 +1,10 @@
+## 0.7.0 (2024-02-22)
+
+### Feat
+
+- bringing in proper file path handling for finding images
+- **config**: creating a config entity
+
 ## 0.6.0 (2023-07-23)
 
 ### Feat
