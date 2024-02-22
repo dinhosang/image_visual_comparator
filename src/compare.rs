@@ -3,7 +3,7 @@ use image::GenericImageView;
 use crate::{
     errors::DimensionMismatchError,
     models::{ImageHolder, PixelCoord},
-    utils::validation::{are_dimensions_matching_for_images, is_pixel_for_images_matching},
+    utils::image::{are_dimensions_matching_for_images, is_pixel_for_images_matching},
 };
 
 #[doc(hidden)]

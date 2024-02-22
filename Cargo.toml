@@ -12,6 +12,7 @@ image = "0.24.6"
 lab = "0.11.0"
 thiserror = "1.0.43"
 tokio = { version = "1.29.1", features = ["full"] }
+walkdir = "2.3.3"
 
 [dev-dependencies]
 assert_fs = "1.0.13"

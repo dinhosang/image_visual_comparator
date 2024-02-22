@@ -42,7 +42,7 @@ pub mod files {
             }
         }
 
-        fn get_temp_dir_path(&self) -> &str {
+        pub fn get_temp_dir_path(&self) -> &str {
             self.temp_dir.as_ref().unwrap().path().to_str().unwrap()
         }
 

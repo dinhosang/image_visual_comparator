@@ -9,7 +9,7 @@ fn testing_this_benchmark(c: &mut Criterion) {
     let empty_iter: std::iter::Empty<OsString> = std::iter::empty();
 
     let mut group = c.benchmark_group("memory");
-    group.measurement_time(Duration::from_secs(60));
+    group.measurement_time(Duration::from_secs(90));
     group.sample_size(10);
 
     group.bench_function("baseline", |b| {

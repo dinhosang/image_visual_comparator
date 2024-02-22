@@ -5,7 +5,7 @@ on: pull_request
 jobs:
   pr_checks:
     runs-on: ubuntu-latest
-    name: perform checks on PR code"
+    name: perform checks on PR code
     steps:
       - name: Check out
         uses: actions/checkout@v3
@@ -17,7 +17,4 @@ jobs:
         shell: bash
       - name: tests (unit)
         run: cargo test
-        shell: bash
-      - name: tests (benchmark)
-        run: cargo bench
         shell: bash
