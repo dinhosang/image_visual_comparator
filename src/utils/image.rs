@@ -47,7 +47,7 @@ mod tests {
         mod returns_false {
             use crate::{
                 test_utils::image::create_dynamic_image,
-                utils::validation::{
+                utils::image::{
                     are_dimensions_matching_for_images, tests::helpers::create_image_holders,
                 },
             };
@@ -78,7 +78,7 @@ mod tests {
         mod returns_true {
             use crate::{
                 test_utils::image::{change_pixel_on_img, create_dynamic_image},
-                utils::validation::{
+                utils::image::{
                     are_dimensions_matching_for_images, tests::helpers::create_image_holders,
                 },
             };
@@ -117,7 +117,7 @@ mod tests {
             use crate::{
                 models::PixelCoord,
                 test_utils::image::create_dynamic_image,
-                utils::validation::{
+                utils::image::{
                     is_pixel_for_images_matching, tests::helpers::create_image_holders,
                 },
             };
@@ -161,7 +161,7 @@ mod tests {
             use crate::{
                 models::PixelCoord,
                 test_utils::image::create_dynamic_image,
-                utils::validation::{
+                utils::image::{
                     is_pixel_for_images_matching, tests::helpers::create_image_holders,
                 },
             };

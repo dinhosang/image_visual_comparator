@@ -13,17 +13,15 @@ If wishing to PR:
 
 TODO NEXT:
 
-- when creating directories use Path/PathBuf rather than just trusting to user input as user could pass windows path, neeed to use std crate structs to handle that - can't just format together into one string directly
-- handle checking for directories, error if not found
-- should inform if there are solo images, error if any found
-  - above meaning images with no corresponding pair
-- retrieve paths of pairs of images and pass into handle pair function instead of current hard-coding
+- error handling ?
+  - refactor new file handling to take above into account
+
+TODO NEXT NEXT:
+
+- communicating back result of spawned jobs
 
 TODO:
 
-- grab pairs of images and do comparison
-  - images need same name but be in different folders
-  - how many to grab at once ? multithreading ? would need to benchmark to know
 - take each resulting list of mismatched pixels
 - create new image that is the pair of images side by side
 - draw box around areas of mismatched pixels on both sides of this new image
@@ -93,3 +91,4 @@ TODO:
   - <https://rust-cli.github.io/book/index.html>
 - making cross platform
   - does the fs module handle taking unix style paths and making them work in a windows os ? or does the cli have to do that itself/via a crate ?
+- update pr checks yaml to lock down version of rust used as clippy rules can change from version to version

@@ -1,3 +1,3 @@
 pub mod colour;
 pub mod files;
-pub mod validation;
+pub mod image;
