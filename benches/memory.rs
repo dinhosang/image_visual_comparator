@@ -15,7 +15,7 @@ fn testing_this_benchmark(c: &mut Criterion) {
     group.bench_function("baseline", |b| {
         b.iter(|| {
             let result = run(AppConfig::parse_from(empty_iter.to_owned()));
-            black_box(result);
+            let _ = black_box(result);
         })
     });
     group.finish();

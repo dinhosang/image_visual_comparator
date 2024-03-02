@@ -6,43 +6,38 @@ mod utils;
 
 mod test_utils;
 
-use compare::compare_pair_of_images;
-use config::AppConfig;
-use errors::IVCError;
-use models::{ImageHolder, PixelCoord};
 use tokio::runtime::Runtime;
 use tokio::task::JoinSet;
-use utils::files::{
-    directory_exists, find_files, get_pair_of_images_from_file_locations,
-    get_pairs_of_file_paths_for_images,
+
+use compare::compare_pair_of_images;
+use config::AppConfig;
+use errors::{handling::create_dimension_mismatch_error, ivc::IVCError};
+use models::{ImageHolder, PixelCoord};
+use utils::{
+    file_paths::get_file_path_pairs_if_valid,
+    file_system::{
+        directories::get_directories_if_exist, files::get_files_if_directories_match_in_file_count,
+        images::get_pair_of_images_from_file_locations,
+    },
+    image::are_dimensions_matching_for_images,
 };
 
-use crate::utils::files::are_file_paths_valid;
-
-pub fn run(config: AppConfig) {
+pub fn run(config: AppConfig) -> Result<(), IVCError> {
     let pixel_tolerance = config.get_tolerance();
 
-    let original_dir = config.get_original_images_dir();
-    let latest_dir = config.get_latest_images_dir();
+    // TODO: should be able to return Err, and main invoking run should exit code 1
+    // TODO: test
+    let (original_dir, latest_dir) = get_directories_if_exist(&config)?;
 
-    if !directory_exists(&original_dir) || !directory_exists(&latest_dir) {
-        // TODO FUTURE: add error handling here
-        // TODO FUTURE: should return Err, and main invoking run should exit code 1
-        // TODO FUTURE: should log reason here though
-        println!("TEMP: orig and/or latest directory is missing!");
-        println!("expected .... put orig and latest dirs in here");
-        return;
-    }
+    // TODO: should be able to return Err, and main invoking run should exit code 1
+    // TODO: test
+    let (orig_image_file_paths, latest_images_file_paths) =
+        get_files_if_directories_match_in_file_count(&config, original_dir, latest_dir)?;
 
-    let orig_png_file_paths = find_files(&original_dir, &config.image_extension);
-    let latest_png_file_paths = find_files(&latest_dir, &config.image_extension);
-
-    if !are_file_paths_valid(&config, &orig_png_file_paths, &latest_png_file_paths) {
-        return;
-    }
-
+    // TODO: should be able to return Err, and main invoking run should exit code 1
+    // TODO: test
     let image_pairs =
-        get_pairs_of_file_paths_for_images(orig_png_file_paths, latest_png_file_paths);
+        get_file_path_pairs_if_valid(&config, orig_image_file_paths, latest_images_file_paths)?;
 
     let rt = Runtime::new().unwrap();
     rt.block_on(async {
@@ -50,6 +45,7 @@ pub fn run(config: AppConfig) {
 
         // TODO FUTURE: perhaps create a tokio message channel to send result of a spawned task
         //          can then go through and check for errors etc.
+        // TODO FUTURE: also currently no return from this part so mismatch error goes nowhere
 
         for (orig_image_location, lat_image_location) in image_pairs.into_iter() {
             set.spawn(async move {
@@ -65,6 +61,8 @@ pub fn run(config: AppConfig) {
             task_result.unwrap();
         }
     });
+
+    Ok(())
 }
 
 fn handle_pair_of_images(
@@ -75,5 +73,9 @@ fn handle_pair_of_images(
     let images: (ImageHolder, ImageHolder) =
         get_pair_of_images_from_file_locations(image_location_one, image_location_two)?;
 
-    Ok(compare_pair_of_images(&images, pixel_tolerance)?)
+    if !are_dimensions_matching_for_images(&images) {
+        return Err(create_dimension_mismatch_error(images));
+    }
+
+    Ok(compare_pair_of_images(&images, pixel_tolerance))
 }

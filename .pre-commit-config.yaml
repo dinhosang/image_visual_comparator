@@ -46,15 +46,15 @@ repos:
         always_run: true
         fail_fast: true
         pass_filenames: false
-      - id: testing_bench
-        name: running benchmark tests
-        description: runs benchmark tests using Criterion (won't cause push to fail if regression found)
-        language: system
-        types: 
-          - rust
-        entry: cargo bench
-        always_run: true
-        fail_fast: true
-        pass_filenames: false
+      # - id: testing_bench
+      #   name: running benchmark tests
+      #   description: runs benchmark tests using Criterion (won't cause push to fail if regression found)
+      #   language: system
+      #   types: 
+      #     - rust
+      #   entry: cargo bench
+      #   always_run: true
+      #   fail_fast: true
+      #   pass_filenames: false
 default_install_hook_types:
   - pre-push

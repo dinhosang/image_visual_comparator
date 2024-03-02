@@ -1,9 +1,8 @@
 use image::GenericImageView;
 
 use crate::{
-    errors::DimensionMismatchError,
     models::{ImageHolder, PixelCoord},
-    utils::image::{are_dimensions_matching_for_images, is_pixel_for_images_matching},
+    utils::image::is_pixel_for_images_matching,
 };
 
 #[doc(hidden)]
@@ -20,14 +19,7 @@ use crate::{
 pub fn compare_pair_of_images(
     images: &(ImageHolder, ImageHolder),
     pixel_tolerance: f32,
-) -> Result<Vec<PixelCoord>, DimensionMismatchError> {
-    if !are_dimensions_matching_for_images(images) {
-        return Err(DimensionMismatchError::new(
-            images.0.location.to_string(),
-            images.1.location.to_string(),
-        ));
-    }
-
+) -> Vec<PixelCoord> {
     let (width, height) = images.0.image.dimensions();
 
     let mut mismatched_pixels: Vec<PixelCoord> = Vec::new();
@@ -42,83 +34,29 @@ pub fn compare_pair_of_images(
         }
     }
 
-    Ok(mismatched_pixels)
+    mismatched_pixels
 }
 
 #[cfg(test)]
 mod tests {
-    pub mod helpers {
-        use image::DynamicImage;
-
-        use crate::models::ImageHolder;
-
-        pub fn create_image_holders(
-            image_one: DynamicImage,
-            image_one_location: &String,
-            image_two: DynamicImage,
-            image_two_location: &String,
-        ) -> (ImageHolder, ImageHolder) {
-            (
-                ImageHolder::new(image_one, image_one_location),
-                ImageHolder::new(image_two, image_two_location),
-            )
-        }
-    }
-    mod returns_error {
-        use crate::{
-            compare::{compare_pair_of_images, tests::helpers::create_image_holders},
-            test_utils::{
-                files::{create_temp_dir_handler, get_image_locations},
-                image::create_dynamic_image,
-            },
-        };
-
-        #[test]
-        fn when_images_do_not_have_matching_dimensions() {
-            let temp_dir_holder = create_temp_dir_handler();
-            let (image_one_location, image_two_location) = get_image_locations(&temp_dir_holder);
-
-            let image_one = create_dynamic_image(5, 5);
-            let image_two = create_dynamic_image(4, 5);
-
-            let _ = image_one.save(&image_one_location);
-            let _ = image_two.save(&image_two_location);
-
-            let images = create_image_holders(
-                image_one,
-                &image_one_location,
-                image_two,
-                &image_two_location,
-            );
-
-            let result = compare_pair_of_images(&images, 5_f32);
-            let expected = format!(
-                "dimensions do not match: {} and {}",
-                image_one_location, image_two_location
-            );
-
-            assert_eq!(expected, result.unwrap_err().to_string());
-        }
-    }
-
     mod returns_vector {
         use image::{DynamicImage, GenericImage};
 
         use crate::{
             models::{ImageHolder, PixelCoord},
             test_utils::{
-                files::{create_temp_dir_handler, get_image_locations, TempDirHolder},
+                files::{create_temp_dir_handler, get_image_locations, TempDirHandler},
                 image::create_dynamic_image,
             },
         };
 
-        use super::helpers::create_image_holders;
+        use super::test_helpers::create_image_holders;
 
         const PIXEL_COLOUR_WITHIN_TOLERANCE: u8 = 250;
         const PIXEL_COLOUR_OUTSIDE_TOLERANCE: u8 = 249;
 
         fn setup_and_return_required_data() -> (
-            TempDirHolder,
+            TempDirHandler,
             (ImageHolder, ImageHolder),
             PixelCoord,
             PixelCoord,
@@ -167,11 +105,11 @@ mod tests {
                 compare::{
                     compare_pair_of_images,
                     tests::{
-                        helpers::create_image_holders,
                         returns_vector::{
                             setup_and_return_required_data, update_image_for_pixels,
                             PIXEL_COLOUR_WITHIN_TOLERANCE,
                         },
+                        test_helpers::create_image_holders,
                     },
                 },
                 models::PixelCoord,
@@ -207,7 +145,7 @@ mod tests {
                     images.0.image, images.1.image,
                     "Images should have matched, but do not"
                 );
-                assert_eq!(expected, result.unwrap());
+                assert_eq!(expected, result);
             }
 
             #[test]
@@ -261,7 +199,7 @@ mod tests {
                     images.0.image, images.1.image,
                     "Images should NOT have matched, but do"
                 );
-                assert_eq!(expected, result.unwrap());
+                assert_eq!(expected, result);
             }
         }
 
@@ -332,8 +270,26 @@ mod tests {
                     images.0.image, images.1.image,
                     "Images should NOT have matched, but do"
                 );
-                assert_eq!(expected, result.unwrap());
+                assert_eq!(expected, result);
             }
+        }
+    }
+
+    mod test_helpers {
+        use image::DynamicImage;
+
+        use crate::models::ImageHolder;
+
+        pub fn create_image_holders(
+            image_one: DynamicImage,
+            image_one_location: &str,
+            image_two: DynamicImage,
+            image_two_location: &str,
+        ) -> (ImageHolder, ImageHolder) {
+            (
+                ImageHolder::new(image_one, image_one_location),
+                ImageHolder::new(image_two, image_two_location),
+            )
         }
     }
 }

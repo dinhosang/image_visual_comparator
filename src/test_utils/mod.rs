@@ -26,24 +26,46 @@ pub mod image {
 }
 
 #[cfg(test)]
+pub mod constants {
+    pub struct TestConstants;
+
+    impl TestConstants {
+        pub const IMAGES: &'static str = "images";
+        pub const ORIGINAL: &'static str = "original";
+        pub const LATEST: &'static str = "latest";
+    }
+}
+
+#[cfg(test)]
 pub mod files {
-    use std::path::PathBuf;
+    use std::{fs, path::PathBuf};
 
     use assert_fs::TempDir;
 
-    pub struct TempDirHolder {
+    pub struct TempDirHandler {
         pub temp_dir: Option<TempDir>,
     }
 
-    impl TempDirHolder {
+    impl TempDirHandler {
         pub fn new() -> Self {
-            TempDirHolder {
+            TempDirHandler {
                 temp_dir: Some(assert_fs::TempDir::new().unwrap()),
             }
         }
 
         pub fn get_temp_dir_path(&self) -> &str {
             self.temp_dir.as_ref().unwrap().path().to_str().unwrap()
+        }
+
+        pub fn create_dir_in_temp_dir(&self, dir_name: &str) {
+            let _ = fs::create_dir(
+                self.temp_dir
+                    .as_ref()
+                    .unwrap()
+                    .path()
+                    .join(dir_name)
+                    .as_path(),
+            );
         }
 
         pub fn get_location_of_file_name(&self, file_name: &str) -> String {
@@ -55,7 +77,7 @@ pub mod files {
         }
     }
 
-    impl Drop for TempDirHolder {
+    impl Drop for TempDirHandler {
         fn drop(&mut self) {
             if let Some(temp_dir) = self.temp_dir.take() {
                 temp_dir.close().unwrap();
@@ -63,14 +85,45 @@ pub mod files {
         }
     }
 
-    pub fn create_temp_dir_handler() -> TempDirHolder {
-        TempDirHolder::new()
+    pub fn create_temp_dir_handler() -> TempDirHandler {
+        TempDirHandler::new()
     }
 
-    pub fn get_image_locations(holder: &TempDirHolder) -> (String, String) {
+    pub fn get_image_locations(holder: &TempDirHandler) -> (String, String) {
         let image_one_location = holder.get_location_of_file_name("some_image_one.png");
         let image_two_location = holder.get_location_of_file_name("some_image_two.png");
 
         (image_one_location, image_two_location)
+    }
+
+    pub fn create_file_names(base: &str) -> Vec<String> {
+        vec![
+            format!("{:}/another_dir/more_image.png", base),
+            format!("{:}/image.png", base),
+            format!("{:}/some_dir/some_image.png", base),
+            format!("{:}/some_dir/some_image_two.png", base),
+        ]
+    }
+}
+
+#[cfg(test)]
+pub mod config {
+    use std::ffi::OsString;
+
+    use clap::Parser;
+
+    use crate::config::AppConfig;
+
+    pub fn create_config_for_test(directory: &str) -> AppConfig {
+        let app_name = "ivc";
+
+        let input = vec![
+            OsString::from(app_name),
+            OsString::from("--directory"),
+            OsString::from(directory),
+        ]
+        .into_iter();
+
+        AppConfig::parse_from(input)
     }
 }
