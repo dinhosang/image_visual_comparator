@@ -13,8 +13,11 @@ If wishing to PR:
 
 TODO NEXT:
 
-- error handling ?
-  - refactor new file handling to take above into account
+- logging, can pass level to cli
+- should log generally for errors etc, can switch off/on
+- should log progress
+  - can differ in style if logging to terminal or to file ?
+  - should allow or logs to be suppressed
 
 TODO NEXT NEXT:
 
@@ -22,6 +25,10 @@ TODO NEXT NEXT:
 
 TODO:
 
+- development container
+- production container
+- refactor directory structure of utils
+- add tests for lib.rs
 - take each resulting list of mismatched pixels
 - create new image that is the pair of images side by side
 - draw box around areas of mismatched pixels on both sides of this new image
@@ -30,11 +37,14 @@ TODO:
   - box should default red, but could be another colour ?
     - set by user ?
     - determined by colours on image ?
+- refactor test_utils
+- fix and refactor bench tests to create the files for the test, also to create actual config, then turn on again in pre commit hooks
+- possible for benchmark results to be somewhere that can be stored for running in CD environment ?
+- can test main.rs ?
+- test AppConfig
+- any vecs that can be converted to just being slices ?
 - save new image into a results folder
 - report back to user what the result was ?
-- should log progress
-  - can differ in style if logging to terminal or to file ?
-  - should allow or logs to be suppressed
 - should write result to a file in top of results folder so that other apps can see progress and respond as appropriate ?
 - should not handle:
   - responding to there being mismatched images, caller of cli should see result file and decide what they want to do
@@ -92,3 +102,4 @@ TODO:
 - making cross platform
   - does the fs module handle taking unix style paths and making them work in a windows os ? or does the cli have to do that itself/via a crate ?
 - update pr checks yaml to lock down version of rust used as clippy rules can change from version to version
+- look at any other TODO

@@ -26,29 +26,12 @@ pub fn is_pixel_for_images_matching(
 
 #[cfg(test)]
 mod tests {
-
-    pub mod helpers {
-        use image::DynamicImage;
-
-        use crate::models::ImageHolder;
-
-        pub fn create_image_holders(
-            image_one: DynamicImage,
-            image_two: DynamicImage,
-        ) -> (ImageHolder, ImageHolder) {
-            (
-                ImageHolder::new(image_one, "one.png"),
-                ImageHolder::new(image_two, "two.png"),
-            )
-        }
-    }
-
     mod are_dimensions_matching_for_images {
         mod returns_false {
             use crate::{
                 test_utils::image::create_dynamic_image,
                 utils::image::{
-                    are_dimensions_matching_for_images, tests::helpers::create_image_holders,
+                    are_dimensions_matching_for_images, tests::test_helpers::create_image_holders,
                 },
             };
 
@@ -79,7 +62,7 @@ mod tests {
             use crate::{
                 test_utils::image::{change_pixel_on_img, create_dynamic_image},
                 utils::image::{
-                    are_dimensions_matching_for_images, tests::helpers::create_image_holders,
+                    are_dimensions_matching_for_images, tests::test_helpers::create_image_holders,
                 },
             };
 
@@ -118,7 +101,7 @@ mod tests {
                 models::PixelCoord,
                 test_utils::image::create_dynamic_image,
                 utils::image::{
-                    is_pixel_for_images_matching, tests::helpers::create_image_holders,
+                    is_pixel_for_images_matching, tests::test_helpers::create_image_holders,
                 },
             };
 
@@ -162,7 +145,7 @@ mod tests {
                 models::PixelCoord,
                 test_utils::image::create_dynamic_image,
                 utils::image::{
-                    is_pixel_for_images_matching, tests::helpers::create_image_holders,
+                    is_pixel_for_images_matching, tests::test_helpers::create_image_holders,
                 },
             };
 
@@ -218,6 +201,22 @@ mod tests {
                     is_pixel_for_images_matching(&images, &pixel_coord, TOLERANCE)
                 );
             }
+        }
+    }
+
+    mod test_helpers {
+        use image::DynamicImage;
+
+        use crate::models::ImageHolder;
+
+        pub fn create_image_holders(
+            image_one: DynamicImage,
+            image_two: DynamicImage,
+        ) -> (ImageHolder, ImageHolder) {
+            (
+                ImageHolder::new(image_one, "one.png"),
+                ImageHolder::new(image_two, "two.png"),
+            )
         }
     }
 }

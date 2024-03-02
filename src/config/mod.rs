@@ -37,7 +37,7 @@ pub struct AppConfig {
     pub image_extension: String,
 }
 
-// TOD: test
+// TODO: test
 impl AppConfig {
     pub fn get_tolerance(&self) -> f32 {
         self.tolerance as f32
