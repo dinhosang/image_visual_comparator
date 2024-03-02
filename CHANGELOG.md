@@ -1,3 +1,9 @@
+## 0.8.0 (2024-03-02)
+
+### Feat
+
+- added in proper error handling
+
 ## 0.7.0 (2024-02-22)
 
 ### Feat
