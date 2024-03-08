@@ -1,6 +1,7 @@
 use crate::{
     config::AppConfig,
     errors::{handling::create_image_not_paired_error, ivc::IVCError},
+    logger::Logger,
 };
 
 use self::helpers::{are_file_path_pairs_valid, get_pairs_of_file_paths_for_images};
@@ -13,6 +14,11 @@ pub fn get_file_path_pairs_if_valid(
     let image_pairs = get_pairs_of_file_paths_for_images(original_paths, latest_paths);
 
     if are_file_path_pairs_valid(config, &image_pairs) {
+        Logger::info(format!(
+            "Retrieved file paths for image pairs - number of pairs: '{}'",
+            image_pairs.len()
+        ));
+        Logger::debug(format!("file paths for image pairs: '{:#?}'", image_pairs));
         return Ok(image_pairs);
     }
 
@@ -167,7 +173,7 @@ mod tests {
 }
 
 mod helpers {
-    use crate::config::AppConfig;
+    use crate::{config::AppConfig, logger::Logger};
 
     pub fn are_file_path_pairs_valid(config: &AppConfig, image_pairs: &[(String, String)]) -> bool {
         for (orig_image_location, lat_image_location) in image_pairs.iter() {
@@ -180,7 +186,9 @@ mod helpers {
                 .unwrap();
 
             if original_clean != latest_clean {
-                // TODO: log here - test logged message to prove this outcome
+                Logger::error(format!(
+                    "file paths should match but don't. Original: '{original_clean}', Latest: '{latest_clean}'"
+                ));
                 return false;
             }
         }

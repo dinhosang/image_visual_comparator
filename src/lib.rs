@@ -1,8 +1,10 @@
 mod compare;
-pub mod config;
 mod errors;
 mod models;
 mod utils;
+
+pub mod config;
+pub use crate::utils::logger;
 
 mod test_utils;
 

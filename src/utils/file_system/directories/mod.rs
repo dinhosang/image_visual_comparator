@@ -1,4 +1,4 @@
-use crate::{config::AppConfig, errors::ivc::IVCError};
+use crate::{config::AppConfig, errors::ivc::IVCError, logger::Logger};
 
 use self::helpers::validate_directories_exist;
 
@@ -7,6 +7,11 @@ pub fn get_directories_if_exist(config: &AppConfig) -> Result<(String, String), 
     let latest_dir = config.get_latest_images_dir();
 
     validate_directories_exist(&original_dir, &latest_dir)?;
+
+    Logger::info("Found directories for original and latest images".to_string());
+    Logger::debug(format!(
+        "directories - original: '{original_dir}', latest: '{latest_dir}'"
+    ));
 
     Ok((original_dir, latest_dir))
 }
@@ -124,8 +129,6 @@ mod helpers {
             return true;
         }
 
-        // TODO: should log if false
-        // TODO: test that log happens
         false
     }
 

@@ -1,6 +1,7 @@
 use crate::{
     config::AppConfig,
     errors::{handling::create_image_count_mismatch_error, ivc::IVCError},
+    logger::Logger,
 };
 
 use self::helpers::find_files;
@@ -14,6 +15,11 @@ pub fn get_files_if_directories_match_in_file_count(
     let latest_images_file_paths = find_files(&latest_dir, &config.image_extension);
 
     if orig_image_file_paths.len() == latest_images_file_paths.len() {
+        Logger::info("Retrieved file paths for images".to_string());
+        Logger::debug(format!(
+            "file paths - original: '{:#?}', latest: '{:#?}'",
+            orig_image_file_paths, latest_images_file_paths
+        ));
         return Ok((orig_image_file_paths, latest_images_file_paths));
     }
 

@@ -13,22 +13,17 @@ If wishing to PR:
 
 TODO NEXT:
 
-- logging, can pass level to cli
-- should log generally for errors etc, can switch off/on
-- should log progress
-  - can differ in style if logging to terminal or to file ?
-  - should allow or logs to be suppressed
+- communicating back result of spawned jobs
 
 TODO NEXT NEXT:
 
-- communicating back result of spawned jobs
+- add tests for lib.rs
 
 TODO:
 
 - development container
 - production container
 - refactor directory structure of utils
-- add tests for lib.rs
 - take each resulting list of mismatched pixels
 - create new image that is the pair of images side by side
 - draw box around areas of mismatched pixels on both sides of this new image
@@ -103,3 +98,4 @@ TODO:
   - does the fs module handle taking unix style paths and making them work in a windows os ? or does the cli have to do that itself/via a crate ?
 - update pr checks yaml to lock down version of rust used as clippy rules can change from version to version
 - look at any other TODO
+- not for this, but in <https://github.com/dinhosang/steam_aws/blob/main/docs/how_to_use.md#remote-desktop-access> , clean up readme - has some grammar issues. Also check and write explicitly about what I do regarding ip addresses/security of the of ec2 instance. I'm pretty sure I do lock that down but I should say that explicitly i I intend this to function as a showpiece of things I think about.
