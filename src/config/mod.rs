@@ -1,6 +1,7 @@
-use std::path::Path;
+use std::{path::Path, str::FromStr};
 
-use clap::Parser;
+use clap::{builder::PossibleValuesParser, Parser};
+use log::LevelFilter;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -24,6 +25,17 @@ pub struct AppConfig {
     )]
     tolerance: u8,
 
+    #[arg(
+        short,
+        long,
+        default_value = LevelFilter::Info.as_str(),
+        value_parser = PossibleValuesParser::new(
+            LevelFilter::iter().map(|level| level.as_str())
+        ),
+        long_help = "Will log events at the chosen level and below",
+    )]
+    log_level: String,
+
     #[arg(skip = "latest")]
     latest_images: String,
 
@@ -41,6 +53,13 @@ pub struct AppConfig {
 impl AppConfig {
     pub fn get_tolerance(&self) -> f32 {
         self.tolerance as f32
+    }
+
+    pub fn get_log_level(&self) -> LevelFilter {
+        match LevelFilter::from_str(&self.log_level) {
+            Ok(level) => level,
+            _ => LevelFilter::Info,
+        }
     }
 
     pub fn get_original_images_dir(&self) -> String {
