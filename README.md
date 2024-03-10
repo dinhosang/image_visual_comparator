@@ -33,6 +33,8 @@ TODO:
     - set by user ?
     - determined by colours on image ?
 - refactor test_utils
+- fix CI so that Cargo.lock is correctly updated when version is updated
+  - currently have to cargo build locally and then push up updated cargo lock file on main
 - fix and refactor bench tests to create the files for the test, also to create actual config, then turn on again in pre commit hooks
 - possible for benchmark results to be somewhere that can be stored for running in CD environment ?
 - can test main.rs ?
