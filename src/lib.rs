@@ -13,8 +13,10 @@ use tokio::task::JoinSet;
 
 use compare::compare_pair_of_images;
 use config::AppConfig;
-use errors::{handling::create_dimension_mismatch_error, ivc::IVCError};
-use models::{ImageHolder, PixelCoord};
+use errors::{
+    handling::{create_dimension_mismatch_error, create_tokio_join_error},
+    ivc::IVCError,
+};
 use utils::{
     file_paths::get_file_path_pairs_if_valid,
     file_system::{
@@ -42,6 +44,7 @@ pub fn run(config: AppConfig) -> Result<(), IVCError> {
         get_file_path_pairs_if_valid(&config, orig_image_file_paths, latest_images_file_paths)?;
 
     let rt = Runtime::new().unwrap();
+
     rt.block_on(async {
         let mut set = JoinSet::new();
 
@@ -50,34 +53,36 @@ pub fn run(config: AppConfig) -> Result<(), IVCError> {
         // TODO FUTURE: also currently no return from this part so mismatch error goes nowhere
 
         for (orig_image_location, lat_image_location) in image_pairs.into_iter() {
-            set.spawn(async move {
-                let _ = handle_pair_of_images(
-                    orig_image_location.as_str(),
-                    lat_image_location.as_str(),
-                    pixel_tolerance,
-                );
+            set.spawn_blocking(move || {
+                get_pair_of_images_from_file_locations(&orig_image_location, &lat_image_location)
             });
         }
 
-        while let Some(task_result) = set.join_next().await {
-            task_result.unwrap();
+        while let Some(tokio_join_result) = set.join_next().await {
+            let task_result = match tokio_join_result {
+                Ok(result) => result,
+                Err(err) => {
+                    return Err(create_tokio_join_error(
+                        "retrieving images from file system",
+                        err,
+                    ));
+                }
+            };
+
+            let image_pair = match task_result {
+                Ok(value) => value,
+                Err(err) => return Err(err),
+            };
+
+            if !are_dimensions_matching_for_images(&image_pair) {
+                return Err(create_dimension_mismatch_error(image_pair));
+            }
+
+            let _mismatched_pixels = compare_pair_of_images(&image_pair, pixel_tolerance);
+            // TODO: create model to hold image location and mismatched pixels, maybe ImageHolders and mismatched
+            //          then need to create image with mismatched pixels business
         }
-    });
 
-    Ok(())
-}
-
-fn handle_pair_of_images(
-    image_location_one: &str,
-    image_location_two: &str,
-    pixel_tolerance: f32,
-) -> Result<Vec<PixelCoord>, IVCError> {
-    let images: (ImageHolder, ImageHolder) =
-        get_pair_of_images_from_file_locations(image_location_one, image_location_two)?;
-
-    if !are_dimensions_matching_for_images(&images) {
-        return Err(create_dimension_mismatch_error(images));
-    }
-
-    Ok(compare_pair_of_images(&images, pixel_tolerance))
+        Ok(())
+    })
 }

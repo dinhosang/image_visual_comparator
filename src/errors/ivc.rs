@@ -1,6 +1,7 @@
 use std::fmt;
 
 use super::external::IOReadError;
+use super::external::TokioJoinError;
 use super::internal::ImageCountMismatchError;
 use super::internal::ImageNotPairedError;
 use super::internal::ImagePairDimensionMismatchError;
@@ -13,6 +14,7 @@ pub enum IVCError {
     MissingDirectory(MissingDirectoriesError),
     ImageCountMismatch(ImageCountMismatchError),
     ImageNotPaired(ImageNotPairedError),
+    TokioJoin(TokioJoinError),
 }
 
 impl fmt::Display for IVCError {
@@ -23,6 +25,7 @@ impl fmt::Display for IVCError {
             IVCError::MissingDirectory(err) => err.fmt(f),
             IVCError::ImageCountMismatch(err) => err.fmt(f),
             IVCError::ImageNotPaired(err) => err.fmt(f),
+            IVCError::TokioJoin(err) => err.fmt(f),
         }
     }
 }

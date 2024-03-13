@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
 use image::ImageError;
+use tokio::task::JoinError;
 
 use crate::models::ImageHolder;
 
 use super::{
-    external::IOReadError,
+    external::{IOReadError, TokioJoinError},
     internal::{
         ImageCountMismatchError, ImageNotPairedError, ImagePairDimensionMismatchError,
         MissingDirectoriesError,
@@ -42,6 +43,10 @@ pub fn create_image_not_paired_error() -> IVCError {
 
 pub fn create_io_read_error(location: String, source: ImageError) -> IVCError {
     IVCError::IORead(IOReadError::new(location, source))
+}
+
+pub fn create_tokio_join_error(action: &str, source: JoinError) -> IVCError {
+    IVCError::TokioJoin(TokioJoinError::new(action.to_owned(), source))
 }
 
 pub fn create_dimension_mismatch_error(images: (ImageHolder, ImageHolder)) -> IVCError {

@@ -13,19 +13,26 @@ If wishing to PR:
 
 TODO NEXT:
 
-- communicating back result of spawned jobs
+- create new image that is the pair of images side by side
 
 TODO NEXT NEXT:
 
-- add tests for lib.rs
+- communicating back result of spawned jobs
 
 TODO:
 
+- refactor lib.rs so it's not one giant function with lots of contexts/closures to keep in mind
+- add tests for lib.rs
+- need to ensure benchmark tests are working again first to see if it does anything
+- see how long it takes using current setup and see if task::spawn_blocking would improve?
+  - current spawn creates async event loop but not actual multi-threading, sounds like async is good for I/O tasks
+  - the task spawn blocking creates actual threads that are apparently good for cpu heavy tasks
+  - could grab the images via the async loop, and then parse the images and create new ones via the thread ?
+  - and maybe write new images via async loop again ?
 - development container
 - production container
 - refactor directory structure of utils
 - take each resulting list of mismatched pixels
-- create new image that is the pair of images side by side
 - draw box around areas of mismatched pixels on both sides of this new image
   - box should be close enough to the pixels to be clear what is wrong
   - box should be able to enlargen and encompass multiple mismatched pixels if they are close enough to one another
