@@ -1,3 +1,9 @@
+## 0.10.0 (2024-03-13)
+
+### Feat
+
+- refactoring run() to better handle tokio errors and to prepare for future image creation
+
 ## 0.9.0 (2024-03-10)
 
 ### Feat
