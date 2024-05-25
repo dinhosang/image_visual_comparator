@@ -8,6 +8,7 @@ pub use crate::utils::logger;
 
 mod test_utils;
 
+use models::ComparisonResult;
 use tokio::runtime::Runtime;
 use tokio::task::JoinSet;
 
@@ -46,19 +47,21 @@ pub fn run(config: AppConfig) -> Result<(), IVCError> {
     let rt = Runtime::new().unwrap();
 
     rt.block_on(async {
-        let mut set = JoinSet::new();
+        let mut retrieve_images_set = JoinSet::new();
 
         // TODO FUTURE: perhaps create a tokio message channel to send result of a spawned task
         //          can then go through and check for errors etc.
         // TODO FUTURE: also currently no return from this part so mismatch error goes nowhere
 
         for (orig_image_location, lat_image_location) in image_pairs.into_iter() {
-            set.spawn_blocking(move || {
+            retrieve_images_set.spawn_blocking(move || {
                 get_pair_of_images_from_file_locations(&orig_image_location, &lat_image_location)
             });
         }
 
-        while let Some(tokio_join_result) = set.join_next().await {
+        let mut create_mismatch_images_set = JoinSet::new();
+
+        while let Some(tokio_join_result) = retrieve_images_set.join_next().await {
             let task_result = match tokio_join_result {
                 Ok(result) => result,
                 Err(err) => {
@@ -78,11 +81,22 @@ pub fn run(config: AppConfig) -> Result<(), IVCError> {
                 return Err(create_dimension_mismatch_error(image_pair));
             }
 
-            let _mismatched_pixels = compare_pair_of_images(&image_pair, pixel_tolerance);
+            let mismatched_pixels = compare_pair_of_images(&image_pair, pixel_tolerance);
             // TODO: create model to hold image location and mismatched pixels, maybe ImageHolders and mismatched
             //          then need to create image with mismatched pixels business
+            //  do first line of todo first, rename current branch - can then do the image mismatch creation
+            if !mismatched_pixels.is_empty() {
+                create_mismatch_images_set.spawn_blocking(move || {
+                    create_mismatched_image(
+                        // TODO: pass in values from config
+                        ComparisonResult::new(image_pair, mismatched_pixels),
+                    );
+                });
+            }
         }
 
         Ok(())
     })
 }
+
+fn create_mismatched_image(_comparison_result: ComparisonResult) {}
