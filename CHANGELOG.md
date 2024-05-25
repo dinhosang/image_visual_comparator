@@ -1,3 +1,9 @@
+## 0.11.0 (2024-05-25)
+
+### Feat
+
+- created ComparisonResult to hold image pairs and their mismatched pixels
+
 ## 0.10.0 (2024-03-13)
 
 ### Feat
