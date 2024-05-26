@@ -1,3 +1,9 @@
+## 0.12.0 (2024-05-26)
+
+### Feat
+
+- updated ComparisonResult to also hold mismatch image
+
 ## 0.11.0 (2024-05-25)
 
 ### Feat
