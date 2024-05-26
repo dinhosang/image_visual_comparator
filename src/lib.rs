@@ -8,7 +8,7 @@ pub use crate::utils::logger;
 
 mod test_utils;
 
-use models::ComparisonResult;
+use models::{ComparisonResult, ImageHolder, PixelCoord};
 use tokio::runtime::Runtime;
 use tokio::task::JoinSet;
 
@@ -88,8 +88,9 @@ pub fn run(config: AppConfig) -> Result<(), IVCError> {
             if !mismatched_pixels.is_empty() {
                 create_mismatch_images_set.spawn_blocking(move || {
                     create_mismatched_image(
-                        // TODO: pass in values from config
-                        ComparisonResult::new(image_pair, mismatched_pixels),
+                        // TODO: pass in required values from config
+                        image_pair,
+                        mismatched_pixels,
                     );
                 });
             }
@@ -99,4 +100,10 @@ pub fn run(config: AppConfig) -> Result<(), IVCError> {
     })
 }
 
-fn create_mismatched_image(_comparison_result: ComparisonResult) {}
+fn create_mismatched_image(
+    image_pair: (ImageHolder, ImageHolder),
+    mismatched_pixels: Vec<PixelCoord>,
+) -> ComparisonResult {
+    // TODO: create comparison image here
+    ComparisonResult::new(image_pair, mismatched_pixels, None)
+}
